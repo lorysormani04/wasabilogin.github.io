@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Concessionario Wasabi</title>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-light: #b4ff94;
+            --bg-dark: #2c2c2c;
+            --header-bg-light: #ffffff;
+            --header-bg-dark: #1a1a1a;
+            --text-light: #000000;
+            --text-dark: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background-color: var(--bg-light);
+            color: var(--text-light);
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body.dark-mode {
+            background-color: var(--bg-dark);
+            color: var(--text-dark);
+        }
+
+        .header {
+            background-color: var(--header-bg-light);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .dark-mode .header {
+            background-color: var(--header-bg-dark);
+        }
+
+        .logo {
+            width: 150px;
+            height: 60px;
+        }
+
+        .logo img {
+            max-width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .brand-name {
+            font-size: 24px;
+            font-weight: bold;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            color: var(--text-light);
+            transition: transform 0.3s;
+        }
+
+        .dark-mode .theme-toggle {
+            color: var(--text-dark);
+            transform: rotate(180deg);
+        }
+
+        .vehicle-section {
+            padding: 2rem;
+        }
+
+        .category-title {
+            font-size: 1.5rem;
+            margin: 1rem 0;
+        }
+
+        .vehicle-carousel {
+            display: flex;
+            overflow-x: auto;
+            scroll-behavior: smooth;
+            padding: 1rem 0;
+            gap: 1rem;
+        }
+
+        .vehicle-card {
+            min-width: 300px;
+            background: white;
+            border-radius: 8px;
+            padding: 1rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+            position: relative;
+        }
+
+        .dark-mode .vehicle-card {
+            background: var(--header-bg-dark);
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 4px;
+        }
+
+        .vehicle-info {
+            margin-top: 1rem;
+        }
+
+        .admin-buttons {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 999;
+        }
+
+        .admin-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            font-size: 24px;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .delete-btn {
+            background-color: #f44336;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .dark-mode .modal-content {
+            background-color: var(--header-bg-dark);
+            color: var(--text-dark);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: white;
+            color: black;
+        }
+
+        .dark-mode .form-group input,
+        .dark-mode .form-group select,
+        .dark-mode .form-group textarea {
+            background-color: #333;
+            color: white;
+            border-color: #444;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            background-color: #4CAF50;
+            color: white;
+            margin-right: 10px;
+        }
+
+        .btn-cancel {
+            background-color: #f44336;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .brand-name {
+                margin: 1rem 0;
+            }
+
+            .vehicle-card {
+                min-width: 250px;
+            }
+
+            .admin-buttons {
+                bottom: 20px;
+                right: 20px;
+            }
+        }
+
+            .login-section {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            }
+
+        .login-box {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            text-align: center;
+            }
+
+        .dark-mode .login-box {
+            background: var(--header-bg-dark);
+            color: white;
+            }
+
+        .discord-login-btn {
+            background: #7289DA;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 4px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            }
+
+        .discord-login-btn i {
+            font-size: 1.5rem;
+            }
+
+        .admin-btn.sell-btn {
+            background-color: #4CAF50;
+            }
+
+        .sale-info {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+
+        .dark-mode .sale-info {
+            background: #333;
+    }
+    
+</style>
+</antThrift>
+
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="logo">
+            <img src="logo.png" alt="Logo Concessionario">
+        </div>
+        <div class="brand-name">CONCESSIONARIO WASABI</div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <i class="fas fa-sun"></i>
+        </button>
+    </header>
+
+    <main>
+        <section class="vehicle-section" id="Berline">
+            <h2 class="category-title">Berline</h2>
+            <div class="vehicle-carousel">
+                
+                <!-- Altri veicoli qui -->
+            </div>
+        </section>
+
+        <section class="vehicle-section" id="Sportive">
+            <h2 class="category-title">Sportive</h2>
+            <div class="vehicle-carousel">
+                <!-- Veicoli sportivi qui -->
+            </div>
+        </section>
+
+        <section class="vehicle-section" id="Suv">
+            <h2 class="category-title">Suv</h2>
+            <div class="vehicle-carousel">
+                <!-- Veicoli sportivi qui -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Admin Buttons -->
+    <div class="admin-buttons">
+        <button class="admin-btn" onclick="showPasswordModal('add')">+</button>
+        <button class="admin-btn delete-btn" onclick="showPasswordModal('delete')">-</button>
+        <button class="admin-btn sell-btn" onclick="showPasswordModal('sell')">V</button>
+    </div>
+
+    <!-- Password Modal -->
+    <div id="passwordModal" class="modal">
+        <div class="modal-content">
+            <h2>Inserisci Password</h2>
+            <div class="form-group">
+                <input type="password" id="adminPassword" placeholder="Password">
+            </div>
+            <button class="btn" onclick="checkPassword()">Conferma</button>
+            <button class="btn btn-cancel" onclick="closeModal('passwordModal')">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Add Vehicle Modal -->
+    <div id="addVehicleModal" class="modal">
+        <div class="modal-content">
+            <h2>Aggiungi Nuovo Veicolo</h2>
+            <div class="form-group">
+                <label>Classe Veicolo</label>
+                <select id="vehicleClass">
+                    <option value="berline">Berline</option>
+                    <option value="sportive">Sportive</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Nome Veicolo</label>
+                <input type="text" id="vehicleName">
+            </div>
+            <div class="form-group">
+                <label>URL Immagine Discord</label>
+                <input type="text" id="vehicleImageUrl">
+            </div>
+            <div class="form-group">
+                <label>Specifiche</label>
+                <textarea id="vehicleSpecs" rows="4"></textarea>
+            </div>
+            <div class="form-group">
+                <label>Prezzo</label>
+                <input type="text" id="vehiclePrice">
+            </div>
+            <button class="btn" onclick="addVehicle()">Pubblica</button>
+            <button class="btn btn-cancel" onclick="closeModal('addVehicleModal')">Annulla</button>
+        </div>
+    </div>
+
+    <!-- Delete Vehicle Modal -->
+    <div id="deleteVehicleModal" class="modal">
+        <div class="modal-content">
+            <h2>Elimina Veicolo</h2>
+            <div class="form-group">
+                <label>Seleziona Veicolo da Eliminare</label>
+                <select id="vehicleToDelete"></select>
+            </div>
+            <div class="form-group">
+                <label>Conferma eliminazione digitando il nome completo del veicolo</label>
+                <input type="text" id="deleteConfirmation" placeholder="Nome del veicolo">
+            </div>
+            <button class="btn btn-cancel" onclick="deleteVehicle()">Elimina</button>
+            <button class="btn" onclick="closeModal('deleteVehicleModal')">Annulla</button>
+        </div>
+    </div>
+
+    <script>
+        
+        // Configurazioni Discord e Webhook
+        const DISCORD_CLIENT_ID = '1320907675336315011'; // Inserisci il tuo client ID Discord
+        const DISCORD_REDIRECT_URI = 'URL_TUO_SITO'; // URL del tuo sito
+        const WEBHOOK_URL = 'URL_DEL_TUO_WEBHOOK'; // URL del webhook Discord
+
+        // Variabili globali
+        let currentAction = '';
+        let discordUserData = null;
+
+        // Funzione per controllare l'accesso
+        function checkAccess() {
+            const discordToken = Cookies.get('discord_token');
+            if (!discordToken) {
+                document.getElementById('loginSection').style.display = 'flex';
+                document.querySelector('main').style.display = 'none';
+                return false;
+            }
+            return true;
+        }
+
+        // Funzione per il login con Discord
+        function loginWithDiscord() {
+            const params = new URLSearchParams({
+                client_id: DISCORD_CLIENT_ID,
+                redirect_uri: DISCORD_REDIRECT_URI,
+                response_type: 'token',
+                scope: 'identify'
+            });
+            window.location.href = `https://discord.com/api/oauth2/authorize?${params}`;
+        }
+
+        // Funzione per ottenere i dati dell'utente Discord
+        async function getDiscordUserData(token) {
+            const response = await fetch('https://discord.com/api/users/@me', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            return await response.json();
+        }
+
+        // Funzione per inviare messaggi webhook
+        async function sendWebhookMessage(type, data) {
+            const embed = {
+                title: type === 'add' ? 'Nuovo Veicolo Aggiunto' : 'Veicolo Venduto',
+                color: type === 'add' ? 0x4CAF50 : 0xf44336,
+                fields: [],
+                timestamp: new Date().toISOString()
+            };
+
+            if (type === 'add') {
+                embed.fields = [
+                    { name: 'Nome Veicolo', value: data.name },
+                    { name: 'Prezzo', value: data.price },
+                    { name: 'Aggiunto da', value: `${discordUserData.username} (${discordUserData.id})` }
+                ];
+            } else {
+                embed.fields = [
+                    { name: 'Nome Veicolo', value: data.name },
+                    { name: 'Prezzo', value: data.price },
+                    { name: 'Acquirente', value: `${data.buyerName} (${data.buyerDiscordId})` },
+                    { name: 'Targa', value: data.licensePlate },
+                    { name: 'Venduto da', value: `${discordUserData.username} (${discordUserData.id})` }
+                ];
+            }
+
+            if (data.imageUrl) {
+                embed.image = { url: data.imageUrl };
+            }
+
+            await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    embeds: [embed]
+                })
+            });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const themeToggle = document.querySelector('.theme-toggle i');
+            if (document.body.classList.contains('dark-mode')) {
+                themeToggle.classList.remove('fa-sun');
+                themeToggle.classList.add('fa-moon');
+            } else {
+                themeToggle.classList.remove('fa-moon');
+                themeToggle.classList.add('fa-sun');
+            }
+        }
+
+        function showPasswordModal(action) {
+            currentAction = action;
+            document.getElementById('passwordModal').style.display = 'block';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).style.display = 'none';
+            if (modalId === 'passwordModal') {
+                document.getElementById('adminPassword').value = '';
+            }
+            if (modalId === 'deleteVehicleModal') {
+                document.getElementById('deleteConfirmation').value = '';
+            }
+        }
+
+        function checkPassword() {
+            const password = document.getElementById('adminPassword').value;
+            if (password === 'WASABI2024') {
+                closeModal('passwordModal');
+                if (currentAction === 'add') {
+                    document.getElementById('addVehicleModal').style.display = 'block';
+                } else if (currentAction === 'delete') {
+                    populateDeleteDropdown();
+                    document.getElementById('deleteVehicleModal').style.display = 'block';
+                }
+            } else {
+                alert('Password errata. Riprova.');
+            }
+        }
+
+                function addVehicle() {
+            if (!validateVehicleForm()) {
+                return;
+            }
+
+            const vehicleClass = document.getElementById('vehicleClass').value;
+            const vehicleName = document.getElementById('vehicleName').value.trim();
+            const vehicleImageUrl = document.getElementById('vehicleImageUrl').value.trim();
+            const vehicleSpecs = document.getElementById('vehicleSpecs').value.trim();
+            const vehiclePrice = document.getElementById('vehiclePrice').value.trim();
+            const sectionId = vehicleClass.charAt(0).toUpperCase() + vehicleClass.slice(1);
+            const section = document.querySelector(`#${sectionId} .vehicle-carousel`);
+            
+            if (!section) {
+                alert(`Sezione ${sectionId} non trovata!`);
+                return;
+            }
+
+            const vehicleCard = document.createElement('div');
+            vehicleCard.className = 'vehicle-card';
+            vehicleCard.setAttribute('data-vehicle-name', vehicleName);
+            vehicleCard.setAttribute('data-image-url', vehicleImageUrl);
+
+            vehicleCard.innerHTML = `
+                <img src="${vehicleImageUrl}" class="vehicle-image" alt="${vehicleName}" onerror="handleImageError(this)">
+                <div class="vehicle-info">
+                    <h3>${vehicleName}</h3>
+                    <p>${vehicleSpecs}</p>
+                    <p><strong>Prezzo: €${vehiclePrice}</strong></p>
+                </div>
+            `;
+
+            section.appendChild(vehicleCard);
+            saveVehiclesData();
+
+            // Reset form
+            document.getElementById('vehicleName').value = '';
+            document.getElementById('vehicleImageUrl').value = '';
+            document.getElementById('vehicleSpecs').value = '';
+            document.getElementById('vehiclePrice').value = '';
+            closeModal('addVehicleModal');
+        }
+
+        function populateDeleteDropdown() {
+            const dropdown = document.getElementById('vehicleToDelete');
+            dropdown.innerHTML = '';
+            const vehicles = document.querySelectorAll('.vehicle-card');
+
+            vehicles.forEach(vehicle => {
+                const vehicleName = vehicle.getAttribute('data-vehicle-name');
+                const option = document.createElement('option');
+                option.value = vehicleName;
+                option.textContent = vehicleName;
+                dropdown.appendChild(option);
+            });
+        }
+
+        function deleteVehicle() {
+            const selectedVehicle = document.getElementById('vehicleToDelete').value;
+            const confirmationInput = document.getElementById('deleteConfirmation').value;
+
+            if (confirmationInput === selectedVehicle) {
+                const vehicleToDelete = document.querySelector(`.vehicle-card[data-vehicle-name="${selectedVehicle}"]`);
+                if (vehicleToDelete) {
+                    vehicleToDelete.remove();
+                    closeModal('deleteVehicleModal');
+                    alert(`Veicolo "${selectedVehicle}" eliminato con successo.`);
+                }
+            } else {
+                alert('Il nome inserito non corrisponde al veicolo selezionato. Riprova.');
+            }
+        }
+
+        // Event listener per chiudere i modal cliccando fuori
+        window.onclick = function(event) {
+            const modals = document.getElementsByClassName('modal');
+            for (let modal of modals) {
+                if (event.target === modal) {
+                    closeModal(modal.id);
+                }
+            }
+        }
+
+        // Funzione per validare l'URL di Discord
+        function isValidDiscordUrl(url) {
+            // Verifica se l'URL è un link valido di Discord
+            return url.startsWith('https://cdn.discordapp.com/') ||
+                   url.startsWith('https://media.discordapp.net/');
+        }
+
+        // Funzione di validazione migliorata
+        function validateVehicleForm() {
+            const imageUrl = document.getElementById('vehicleImageUrl').value.trim();
+            const vehicleName = document.getElementById('vehicleName').value.trim();
+            const vehicleSpecs = document.getElementById('vehicleSpecs').value.trim();
+            const vehiclePrice = document.getElementById('vehiclePrice').value.trim();
+
+            if (!vehicleName) {
+                alert('Per favore inserisci il nome del veicolo');
+                return false;
+            }
+
+            if (!isValidDiscordUrl(imageUrl)) {
+                alert('Per favore inserisci un URL valido di Discord per l\'immagine');
+                return false;
+            }
+
+            if (!vehicleSpecs) {
+                alert('Per favore inserisci le specifiche del veicolo');
+                return false;
+            }
+
+            if (!vehiclePrice) {
+                alert('Per favore inserisci il prezzo del veicolo');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Gestore errori immagini migliorato
+        function handleImageError(img) {
+            console.error('Errore nel caricamento dell\'immagine:', img.src);
+            img.src = 'https://via.placeholder.com/300x200?text=Immagine+non+disponibile';
+        }
+
+        // Applicazione del gestore errori a tutte le immagini dei veicoli
+        document.querySelectorAll('.vehicle-image').forEach(img => {
+            handleImageError(img);
+        });
+
+        // Funzione migliorata per salvare i dati
+        function saveVehiclesData() {
+            const vehicles = [];
+            document.querySelectorAll('.vehicle-card').forEach(card => {
+                const section = card.closest('.vehicle-section');
+                if (section) {
+                    vehicles.push({
+                        name: card.getAttribute('data-vehicle-name'),
+                        imageUrl: card.getAttribute('data-image-url'),
+                        specs: card.querySelector('.vehicle-info p').textContent,
+                        price: card.querySelector('.vehicle-info p:last-child').textContent,
+                        category: section.id
+                    });
+                }
+            });
+            localStorage.setItem('wasabiDealershipVehicles', JSON.stringify(vehicles));
+        }
+
+
+        // Funzione per caricare i dati dei veicoli dal localStorage
+        function loadVehiclesData() {
+            const savedVehicles = localStorage.getItem('wasabiDealershipVehicles');
+            if (savedVehicles) {
+                const vehicles = JSON.parse(savedVehicles);
+                vehicles.forEach(vehicle => {
+                    const vehicleCard = document.createElement('div');
+                    vehicleCard.className = 'vehicle-card';
+                    vehicleCard.setAttribute('data-vehicle-name', vehicle.name);
+                    vehicleCard.setAttribute('data-image-url', vehicle.imageUrl);
+
+                    vehicleCard.innerHTML = `
+                        <img src="${vehicle.imageUrl}" class="vehicle-image" alt="${vehicle.name}">
+                        <div class="vehicle-info">
+                            <h3>${vehicle.name}</h3>
+                            <p>${vehicle.specs}</p>
+                            <p>${vehicle.price}</p>
+                        </div>
+                    `;
+
+                    const section = document.querySelector(`#${vehicle.category} .vehicle-carousel`);
+                    section.appendChild(vehicleCard);
+                });
+            }
+        }
+
+        // Carica i dati al caricamento della pagina
+        document.addEventListener('DOMContentLoaded', loadVehiclesData);
+
+        // Salva i dati quando vengono fatte modifiche
+        ['addVehicle', 'deleteVehicle'].forEach(action => {
+            const originalFunction = window[action];
+            window[action] = function() {
+                originalFunction.apply(this, arguments);
+                saveVehiclesData();
+            };
+        });
+    </script>
+
+    <antArtifact identifier="discord-modals" type="application/vnd.ant.code" language="html" title="HTML per modali Discord">
+        <!-- Login Section -->
+        <div id="loginSection" class="login-section">
+            <div class="login-box">
+                <h2>Accedi con Discord</h2>
+                <p>Per visualizzare il listino auto è necessario accedere</p>
+                <button class="discord-login-btn" onclick="loginWithDiscord()">
+                    <i class="fab fa-discord"></i>
+                    Accedi con Discord
+                </button>
+            </div>
+        </div>
+        
+        <!-- Sell Vehicle Modal -->
+        <div id="sellVehicleModal" class="modal">
+            <div class="modal-content">
+                <h2>Vendi Veicolo</h2>
+                <div class="form-group">
+                    <label>Seleziona Veicolo da Vendere</label>
+                    <select id="vehicleToSell"></select>
+                </div>
+                <div class="form-group">
+                    <label>Nome Acquirente</label>
+                    <input type="text" id="buyerName" placeholder="Nome completo acquirente">
+                </div>
+                <div class="form-group">
+                    <label>ID Discord Acquirente</label>
+                    <input type="text" id="buyerDiscordId" placeholder="ID Discord acquirente">
+                </div>
+                <div class="form-group">
+                    <label>Targa Assegnata</label>
+                    <input type="text" id="licensePlate" placeholder="Targa veicolo">
+                </div>
+                <div class="sale-info" id="saleInfo"></div>
+                <button class="btn" onclick="sellVehicle()">Conferma Vendita</button>
+                <button class="btn btn-cancel" onclick="closeModal('sellVehicleModal')">Annulla</button>
+            </div>
+        </div>
+
+</body>
+</html>
